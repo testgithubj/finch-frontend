@@ -4,35 +4,15 @@ on:
   push:
     branches:
       - main
-      - dev
-  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: self-hosted
-
     steps:
-      - name: ✅ Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: 🚀 Deploy with Docker Compose
+      - name: Navigate and deploy
         run: |
-          echo "📁 Going to working directory"
-          cd $GITHUB_WORKSPACE
-
-          echo "🔄 Git pull latest changes"
-          git stash
-          git fetch
-          git checkout dev
-          git pull origin dev
-
-          echo "🧼 Cleaning old containers"
-          docker compose down || true
-
-          echo "🚀 Starting Docker Compose"
-          docker compose up -d --build
-
-      - name: 🧹 Cleanup Docker
-        run: |
-          docker image prune -f
-          docker ps
+          cd finch-frontend
+          docker compose up -d
