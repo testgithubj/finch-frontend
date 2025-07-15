@@ -2,20 +2,26 @@ name: Deploy Docker Compose App
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, X64]  # ✅ তোমার runner এর label অনুযায়ী
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Run Docker Compose
+      - name: Install Docker Compose (CLI plugin style)
         run: |
-          docker compose down
-          docker compose up -d --build
+          mkdir -p ~/.docker/cli-plugins
+          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
+            -o ~/.docker/cli-plugins/docker-compose
+          chmod +x ~/.docker/cli-plugins/docker-compose
+          docker compose version
 
+      - name: Docker Compose Up
+        run: |
+          docker compose down || true
+          docker compose up -d --build
 
