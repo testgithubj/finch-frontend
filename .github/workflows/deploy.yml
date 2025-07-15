@@ -7,21 +7,29 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, Linux, X64]  # ✅ তোমার runner এর label অনুযায়ী
+    runs-on: [self-hosted, Linux, X64]
+
     steps:
-      - name: Checkout repo
+      - name: ✅ Checkout the repository
         uses: actions/checkout@v3
 
-      - name: Install Docker Compose (CLI plugin style)
+      - name: 🔍 Check if docker-compose.yml exists
+        run: |
+          echo "Checking for docker-compose.yml file..."
+          ls -al
+          cat docker-compose.yml || echo "❌ docker-compose.yml not found!"
+
+      - name: 🛠 Install Docker Compose (Plugin style)
         run: |
           mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 \
-            -o ~/.docker/cli-plugins/docker-compose
+          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
           chmod +x ~/.docker/cli-plugins/docker-compose
           docker compose version
 
-      - name: Docker Compose Up
+      - name: 🧹 Docker Compose Down (ignore error if not running)
         run: |
           docker compose down || true
-          docker compose up -d --build
 
+      - name: 🚀 Docker Compose Up with Build
+        run: |
+          docker compose up -d --build
