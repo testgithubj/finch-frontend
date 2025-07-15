@@ -2,34 +2,36 @@ name: Deploy Docker Compose App
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+      - dev
   workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: self-hosted
 
     steps:
-      - name: ✅ Checkout the repository
+      - name: ✅ Checkout code
         uses: actions/checkout@v3
 
-      - name: 🔍 Check if docker-compose.yml exists
+      - name: 🧠 Confirm docker-compose.yml exists
         run: |
-          echo "Checking for docker-compose.yml file..."
-          ls -al
-          cat docker-compose.yml || echo "❌ docker-compose.yml not found!"
+          cd /home/ubuntu/finch/finch-frontend
+          ls -l docker-compose.yml || echo "❌ docker-compose.yml missing"
 
-      - name: 🛠 Install Docker Compose (Plugin style)
+      - name: 🚀 Deploy with Docker Compose
         run: |
-          mkdir -p ~/.docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o ~/.docker/cli-plugins/docker-compose
-          chmod +x ~/.docker/cli-plugins/docker-compose
-          docker compose version
-
-      - name: 🧹 Docker Compose Down (ignore error if not running)
-        run: |
+          cd /home/ubuntu/finch/finch-frontend
+          git stash
+          git fetch
+          git checkout dev
+          git pull origin dev
+          
           docker compose down || true
-
-      - name: 🚀 Docker Compose Up with Build
-        run: |
           docker compose up -d --build
+
+      - name: 🧹 Cleanup Docker
+        run: |
+          docker image prune -f
+          docker ps
